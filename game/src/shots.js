@@ -42,9 +42,13 @@ export function buildShotScene(name) {
     // The money frame: the thief crosses the south hall toward the vault,
     // a guard's cone sweeps the top corridor, the corner camera fans the
     // west gallery, the sapphire glitters centre-frame, alarm bar on top.
+    // The thief stops in open floor (not against a wall) and sneaks, so his
+    // dashed ring reads even at thumbnail size; the alarm bar is mid-fill.
     const world = createWorld(0);
-    playToward(world, [{ x: 430, y: 452 }, { x: 356, y: 430 }, { x: 330, y: 372 }], 6.4);
-    if (world.screen === SCREEN_CAUGHT) { world.screen = 'play'; world.alarm = 42; }
+    playToward(world, [{ x: 430, y: 452 }, { x: 380, y: 440 }, { x: 340, y: 430 }], 6.4);
+    if (world.screen === SCREEN_CAUGHT) { world.screen = 'play'; }
+    world.player.sneaking = true;
+    world.alarm = 42;
     return { world, title: false };
   }
   if (name === 'play') {

@@ -306,7 +306,9 @@ function drawPlay(ctx, world) {
 }
 
 function panel(ctx, title, lines, accent) {
-  ctx.fillStyle = 'rgba(4,6,14,0.78)';
+  // Opaque enough that the gem label and HUD text behind the panel do not
+  // ghost through the title lines at thumbnail size.
+  ctx.fillStyle = 'rgba(4,6,14,0.9)';
   ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = accent;
   ctx.font = 'bold 44px system-ui, sans-serif';
@@ -325,6 +327,7 @@ export function render(ctx, world, ui) {
       'S A P P H I R E   H E I S T',
       '',
       'Sneak past the guards and cameras. Steal the Starlight Sapphire.',
+      '3 galleries • 9 guards • 6 cameras • 18 treasures • laser vault',
       'WASD / Arrow keys to move • Hold SHIFT to sneak • M to mute',
       '',
       'Press ENTER or click to begin the heist',

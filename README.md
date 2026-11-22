@@ -4,7 +4,7 @@
 [![rank](https://make.fun/badge/best-heist-game-20261122-0559/cza999/moonlit-museum-heist/rank.svg)](https://make.fun/bounty/best-heist-game-20261122-0559/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=best-heist-game-20261122-0559)
 [![reward](https://make.fun/badge/best-heist-game-20261122-0559/cza999/moonlit-museum-heist/reward.svg)](https://make.fun/bounty/best-heist-game-20261122-0559?utm_source=github&utm_medium=readme&utm_campaign=best-heist-game-20261122-0559)
 
-Moonlit Museum: Sapphire Heist is a top-down stealth game in plain JavaScript and canvas: sneak a thief through three moonlit museum galleries, dodge guard flashlight cones, sweeping security cameras and laser tripwires, steal the Starlight Sapphire and every treasure you dare, and escape before the alarm meter fills. No build step and no network requests — the game is static files under `game/`, with sound synthesized live in WebAudio.
+Moonlit Museum: Sapphire Heist is a top-down stealth game in plain JavaScript and canvas: sneak a thief through three moonlit museum galleries — 9 guards, 6 cameras, 18 treasures, laser tripwires — dodge guard flashlight cones and sweeping security cameras, steal the Starlight Sapphire and every treasure you dare, and escape before the alarm meter fills. No build step and no network requests — the game is static files under `game/`, with sound synthesized live in WebAudio.
 
 ## Run it
 
