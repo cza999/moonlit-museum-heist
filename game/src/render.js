@@ -2,7 +2,7 @@
 // A moonlit museum: deep blue stone floors, burgundy carpets, brass-trimmed
 // pedestals under glass, warm flashlight cones and cold camera fans.
 
-import { ALARM, CAMERA, EXIT, FIELD, GUARD } from './config.js';
+import { ALARM, CAMERA, EXIT, FIELD, GUARD, LOOT_LABELS } from './config.js';
 import { SCREEN_CAUGHT, SCREEN_PLAY, SCREEN_TITLE, SCREEN_WIN } from './world.js';
 
 const W = FIELD.width;
@@ -37,6 +37,67 @@ function drawFloor(ctx, world) {
     ctx.strokeStyle = '#8a6a2f';
     ctx.lineWidth = 2;
     ctx.strokeRect(x + 3, y + 3, w - 6, h - 6);
+  }
+  // moonlight falling through the high windows: three cold shafts that
+  // lean across the floor and pool where they land
+  ctx.fillStyle = 'rgba(140,175,255,0.055)';
+  for (const [x, lean, w] of [[120, 90, 110], [430, 110, 130], [730, 80, 100]]) {
+    ctx.beginPath();
+    ctx.moveTo(x, 16);
+    ctx.lineTo(x + w, 16);
+    ctx.lineTo(x + w + lean, 300);
+    ctx.lineTo(x + lean, 300);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(x + lean + w / 2, 306, w * 0.62, 13, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// Benches and potted palms: the furniture a real gallery floor has.
+function drawDecor(ctx, world) {
+  const decor = world.level.decor;
+  if (!decor) return;
+  for (const [x, y, w, h] of decor.benches) {
+    ctx.fillStyle = '#3a2a1a';
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = '#5a4128';
+    ctx.fillRect(x, y, w, 3);
+    ctx.fillStyle = '#8a6a2f';
+    ctx.fillRect(x + 4, y + h - 3, w - 8, 2);
+  }
+  for (const plant of decor.plants) {
+    ctx.fillStyle = '#6e4520';
+    ctx.beginPath(); ctx.arc(plant.x, plant.y + 6, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2e5d3a';
+    for (const [ox, oy, r] of [[0, -6, 9], [-8, 0, 7], [8, 0, 7], [0, 3, 8]]) {
+      ctx.beginPath(); ctx.arc(plant.x + ox, plant.y + oy, r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = '#3f7d4e';
+    ctx.beginPath(); ctx.arc(plant.x - 2, plant.y - 8, 4, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+// The dotted patrol routes, printed on the floor like a security plan:
+// read a guard's route before you cross it.
+function drawPatrolRoutes(ctx, world) {
+  ctx.strokeStyle = 'rgba(160,180,230,0.16)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([3, 7]);
+  for (const guard of world.guards) {
+    ctx.beginPath();
+    guard.path.forEach(([px, py], i) => {
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(160,180,230,0.35)';
+  for (const guard of world.guards) {
+    for (const [px, py] of guard.path) {
+      ctx.beginPath(); ctx.arc(px, py, 2.4, 0, Math.PI * 2); ctx.fill();
+    }
   }
 }
 
@@ -117,6 +178,11 @@ function drawLootItem(ctx, loot, time) {
   const tw = 0.5 + 0.5 * Math.sin(time * 2.4 + x);
   ctx.fillStyle = `rgba(255,240,190,${0.25 + 0.3 * tw})`;
   ctx.beginPath(); ctx.arc(x + 9, y - 22, 1.8, 0, Math.PI * 2); ctx.fill();
+  // the engraved brass name plate under the pedestal
+  ctx.fillStyle = 'rgba(201,180,137,0.85)';
+  ctx.font = 'bold 8px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(LOOT_LABELS[kind], x, y + 27);
 }
 
 function drawGem(ctx, world) {
@@ -152,10 +218,22 @@ function drawGem(ctx, world) {
   ctx.fillStyle = '#e8f5ff';
   ctx.beginPath(); ctx.arc(-3, -6, 2, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
+  // the velvet rope on brass posts that keeps honest visitors back
+  ctx.strokeStyle = '#7a1f2b';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x - 32, y + 36);
+  ctx.quadraticCurveTo(x, y + 46, x + 32, y + 36);
+  ctx.stroke();
+  ctx.fillStyle = '#c9a44e';
+  for (const px of [x - 32, x + 32]) {
+    ctx.fillRect(px - 1.5, y + 28, 3, 12);
+    ctx.beginPath(); ctx.arc(px, y + 27, 3, 0, Math.PI * 2); ctx.fill();
+  }
   ctx.fillStyle = '#bcd9ff';
   ctx.font = 'bold 11px system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('STARLIGHT SAPPHIRE', x, y + 46);
+  ctx.fillText('STARLIGHT SAPPHIRE', x, y + 58);
 }
 
 function drawLasers(ctx, world) {
@@ -281,6 +359,8 @@ function drawHud(ctx, world) {
 
 function drawPlay(ctx, world) {
   drawFloor(ctx, world);
+  drawDecor(ctx, world);
+  drawPatrolRoutes(ctx, world);
   drawExit(ctx, world);
   // vision cones under the actors but over the floor
   for (const guard of world.guards) {
@@ -327,7 +407,8 @@ export function render(ctx, world, ui) {
       'S A P P H I R E   H E I S T',
       '',
       'Sneak past the guards and cameras. Steal the Starlight Sapphire.',
-      '3 galleries • 9 guards • 6 cameras • 18 treasures • laser vault',
+      '5 galleries • 20 guards • 14 cameras • 37 treasures • 17 laser tripwires',
+      'Read the dotted patrol routes — a paused guard still looks around.',
       'WASD / Arrow keys to move • Hold SHIFT to sneak • M to mute',
       '',
       'Press ENTER or click to begin the heist',
@@ -344,14 +425,15 @@ export function render(ctx, world, ui) {
     ], '#ff6b7a');
   } else if (world.screen === SCREEN_WIN) {
     panel(ctx, 'CLEAN GETAWAY!', [
-      'All three galleries robbed blind. The museum will notice at dawn.',
-      `Final score: ${world.score}`,
+      'All five galleries robbed blind. The museum will notice at dawn.',
+      `Final gallery grade: ${world.grade ?? '—'}   •   Final score: ${world.score}`,
       '',
       'Press ENTER or click to run the whole heist again',
     ], '#4be38a');
   } else if (ui.transition > 0) {
     panel(ctx, 'ESCAPED!', [
-      `Gallery cleared. Score so far: ${world.score}`,
+      `${world.level.name} cleared — getaway grade ${world.grade ?? '—'}`,
+      `Loot ${world.lootTaken}/${world.loots.length}   •   Peak alarm ${Math.round(world.alarmPeak)}%   •   Score so far: ${world.score}`,
       '',
       'Press ENTER or click for the next gallery',
     ], '#4be38a');

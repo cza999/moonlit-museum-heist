@@ -77,6 +77,8 @@ export function createWorld(levelIndex) {
     time: 0,
     score: 0,
     alarm: 0,
+    alarmPeak: 0, // highest the alarm climbed this gallery (for the grade)
+    grade: null, // S/A/B/C letter grade, set the moment the thief escapes
     spottedBy: 0, // how many eyes are on the thief this frame (for rendering)
     alarmFlash: 0,
     player: {
@@ -97,6 +99,7 @@ export function createWorld(levelIndex) {
       target: 1 % g.path.length,
       wait: 0,
       dir: Math.atan2(g.path[1 % g.path.length][1] - g.path[0][1], g.path[1 % g.path.length][0] - g.path[0][0]),
+      scanDir: Math.atan2(g.path[1 % g.path.length][1] - g.path[0][1], g.path[1 % g.path.length][0] - g.path[0][0]),
     })),
     cameras: level.cameras.map((c) => ({ ...c, dir: c.base })),
     lasers: level.lasers.map((l) => ({ ...l, wasTouching: false })),
@@ -110,6 +113,9 @@ export function createWorld(levelIndex) {
 function updateGuard(world, guard, dt) {
   if (guard.wait > 0) {
     guard.wait -= dt;
+    // A paused guard is not asleep: he looks left and right down the hall,
+    // so his cone sweeps while he stands at the end of his patrol.
+    guard.dir = guard.scanDir + Math.sin(world.time * 1.7 + guard.x * 0.05) * 0.55;
     return;
   }
   const [tx, ty] = guard.path[guard.target];
@@ -119,6 +125,7 @@ function updateGuard(world, guard, dt) {
   if (dist < 3) {
     guard.target = (guard.target + 1) % guard.path.length;
     guard.wait = guard.pauseTime;
+    guard.scanDir = guard.dir;
     return;
   }
   const vx = (dx / dist) * guard.speed;
@@ -215,6 +222,7 @@ export function updateWorld(world, input, dt) {
   }
   if (world.alarmFlash > 0) world.alarmFlash -= dt;
   world.alarm = clamp(world.alarm, 0, ALARM.max);
+  if (world.alarm > world.alarmPeak) world.alarmPeak = world.alarm;
 
   if (world.alarm >= ALARM.max) {
     world.screen = SCREEN_CAUGHT;
@@ -244,6 +252,11 @@ export function updateWorld(world, input, dt) {
     && player.y > EXIT.y - 6 && player.y < EXIT.y + EXIT.height) {
     const timeBonus = Math.max(0, 600 - Math.floor(world.time) * 2);
     world.score += timeBonus;
+    // Grade the getaway: a full sweep of the gallery, quietly done, is an S.
+    const lootFrac = world.loots.length ? world.lootTaken / world.loots.length : 1;
+    world.grade = lootFrac >= 1 && world.alarmPeak < 50 ? 'S'
+      : lootFrac >= 0.75 && world.alarmPeak < 80 ? 'A'
+        : lootFrac >= 0.5 ? 'B' : 'C';
     world.screen = world.levelIndex + 1 >= LEVELS.length ? SCREEN_WIN : SCREEN_ESCAPED;
     world.events.push('escape');
   }

@@ -52,11 +52,13 @@ export function buildShotScene(name) {
     return { world, title: false };
   }
   if (name === 'play') {
-    // Second gallery: lasers live, the south guard's patrol crosses the
-    // thief's run for the vault's south gap and the alarm is climbing.
-    const world = createWorld(1);
+    // Third gallery: four guards, three cameras, lasers live — the south
+    // guard's patrol crosses the thief's run for the vault's south gap
+    // and the alarm is climbing.
+    const world = createWorld(2);
     playToward(world, [{ x: 480, y: 452 }, { x: 470, y: 428 }], 5.2);
     if (world.screen === SCREEN_CAUGHT) { world.screen = 'play'; world.alarm = 58; }
+    if (world.alarm < 30) world.alarm = 46; // the run has been noticed: bar mid-fill, orange
     return { world, title: false };
   }
   if (name === 'end') {
